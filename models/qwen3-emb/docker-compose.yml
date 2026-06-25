@@ -1,0 +1,17 @@
+services:
+  qwen-embed:
+    image: vllm/vllm-openai:qwen3_5-cu130 
+    container_name: vllm-qwen3-8b-embed # 컨테이너 이름 원하는대로 수정
+    runtime: nvidia
+    ports:
+      - "8819:8000" # 노출 포트 역시 동일 
+    volumes:
+      # 경로 중요: 컨테이너 내부의 /vllm-workspace/qwen3-8b-emb 에 마운트
+      - %HF_MODEL_HUB:/vllm-workspace/qwen3-8b-emb:ro # 모델이 컨테이너 내에서도 보이게 마운트, cf. huggingface/hub 내
+    working_dir: /vllm-workspace  # 작업 디렉토리
+    command: >
+      qwen3-8b-emb
+      --served-model-name qwen3-8b-emb # https://huggingface.co/Qwen/Qwen3-Embedding-8B 의 Qwen3-Embedding-8B
+      --trust-remote-code # 로컬 다운로드 모델 외 허용 가능여부 (온프레미스 사용시 hf=0 옵션 및 본 커맨드 삭제)
+      --gpu-memory-utilization 0.20 # GPU를 얼마나 점거할지 확인 
+      --max-model-len 8192 # 컨텍스트 최대길이
